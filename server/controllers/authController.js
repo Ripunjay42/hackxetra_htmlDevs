@@ -1,17 +1,8 @@
-// server/controllers/authController.js
-const prisma =  require("../db/index")
+const prisma = require("../db/index");
 
+// Register a new user
 exports.registerUser = async (req, res) => {
-  const {
-    email,
-    username,
-    firstName,
-    lastName,
-    phoneNumber,
-    gender,
-    bio,
-    profilePicURL
-  } = req.body;
+  const { email, username, firstName, lastName, phoneNumber, gender, bio, profilePicURL } = req.body;
 
   try {
     const user = await prisma.user.create({
@@ -25,21 +16,20 @@ exports.registerUser = async (req, res) => {
         bio,
         profilePicURL,
         emailVerified: false,
-        isEmailVerified: false
+        isEmailVerified: false,
       },
     });
 
     // Set the cookie with `userId`
     res.cookie('userId', user.id);
     res.status(201).json({ message: 'User registered', userId: user.id });
-    
+
   } catch (error) {
     res.status(500).json({ error: 'Failed to register user' });
   }
 };
 
-
-// Check if the user exists and return user ID if true
+// Check if a user exists by email and return user ID if true
 exports.checkUserExists = async (req, res) => {
   const { email } = req.params;
   try {
@@ -51,5 +41,22 @@ exports.checkUserExists = async (req, res) => {
     }
   } catch (error) {
     res.status(500).json({ error: 'Failed to check user existence' });
+  }
+};
+
+
+// Get all user ids and usernames
+exports.getAllUserIds = async (req, res) => {
+  try {
+    const users = await prisma.user.findMany({
+      select: {
+        id: true,
+        username: true,  // Changed from firstName to username
+      },
+    });
+
+    res.status(200).json(users);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch user IDs' });
   }
 };
