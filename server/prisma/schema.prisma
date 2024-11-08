@@ -28,7 +28,10 @@ model User{
   forgotPasswordExpiry    DateTime?
   emailVerificationToken  String?
   emailVerificationExpiry DateTime?
-
+  
+  memberships             GroupMembers[]
+  clubMemberships         ClubMember[]
+  posts                   Post[]    
   createdAt               DateTime @default(now())
   updatedAt               DateTime @updatedAt
 }
@@ -40,7 +43,61 @@ model Group{
   description    String?
   groupURL       String?
 
+  members        GroupMembers[]
+  posts          Post[]    
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
 
-  createdAt               DateTime @default(now())
-  updatedAt               DateTime @updatedAt
+model GroupMembers{
+  id          String  @id @default(uuid())
+  userId      String
+  groupId     String
+  joinedAt    DateTime @default(now())
+
+  user        User     @relation(fields: [userId], references: [id],onDelete: Cascade)
+  group       Group    @relation(fields: [groupId], references: [id],onDelete: Cascade)
+}
+
+model Club {
+  id            String   @id @default(uuid())  
+  name          String   @unique              
+  description   String?                            
+  coverImage    String?                        
+  
+  members       ClubMember[] 
+  posts         Post[]                      
+                     
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  
+}
+
+model ClubMember {
+  id       String   @id @default(uuid())      
+  userId   String                             
+  clubId   String                             
+  joinedAt DateTime @default(now())           
+  
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  club     Club     @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId, clubId])                  
+  @@map("club_members")
+}
+
+
+model Post {
+  id          String   @id @default(uuid())    
+  content     String                           
+  createdAt   DateTime @default(now())         
+  userId      String                           
+  groupId     String?                          
+  clubId      String?                          
+  
+  user        User     @relation(fields: [userId], references: [id])
+  group       Group?   @relation(fields: [groupId], references: [id])
+  club        Club?    @relation(fields: [clubId], references: [id])
+  
+  @@map("posts")
 }
