@@ -32,8 +32,10 @@ model User{
   emailVerificationExpiry DateTime?
   
   memberships             GroupMembers[]
-  clubMemberships         ClubMember[]
-  posts                   Post[]    
+  clubMemberships         ClubMembers[]
+  posts                   Post[] 
+  groupAdmin              GroupAdmin[]
+  clubAdmin               ClubAdmin[]   
   createdAt               DateTime @default(now())
   updatedAt               DateTime @updatedAt
 }
@@ -49,11 +51,26 @@ model Group{
   name           String  @unique
   description    String?
   groupURL       String?
+   
 
+  categories     GroupCategory[]
   members        GroupMembers[]
+  admins         GroupAdmin[]
   posts          Post[]    
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
+}
+
+model GroupCategory {
+  groupId      String
+  categoryId   String
+  addedAt      DateTime          @default(now())
+
+  group        Group             @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  category     Category          @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@id([groupId, categoryId])    
+  @@map("group_categories")
 }
 
 model GroupMembers{
@@ -64,23 +81,69 @@ model GroupMembers{
 
   user        User     @relation(fields: [userId], references: [id],onDelete: Cascade)
   group       Group    @relation(fields: [groupId], references: [id],onDelete: Cascade)
+
+  @@unique([userId, groupId])
+  @@map("group_members")
 }
+
+model GroupAdmin{
+  id       String     @id @default(uuid())
+  userId   String
+  groupId  String
+  addedAt  DateTime   @default(now())
+
+  user     User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  group    Group      @relation(fields: [groupId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, groupId])
+  @@map("group_admins")
+}
+
+
 
 model Club {
   id            String   @id @default(uuid())  
   name          String   @unique              
   description   String?                            
   coverImage    String?                        
+  bannerURL     String?
   
-  members       ClubMember[] 
-  posts         Post[]                      
-                     
+
+  categories    ClubCategory[]
+  members       ClubMembers[] 
+  posts         Post[]      
+  admins        ClubAdmin[]
+
+              
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
   
 }
 
-model ClubMember {
+model Category {
+  id           String            @id @default(uuid())
+  name         String            @unique
+  description  String?
+  createdAt    DateTime          @default(now())
+
+  groups       GroupCategory[]   
+  clubs        ClubCategory[]
+  @@map("categories")
+}
+
+model ClubCategory{
+  clubId  String
+  categoryId  String
+  addedAt      DateTime          @default(now())
+
+  club       Club   @relation(fields: [clubId],references: [id],onDelete: Cascade)
+  category     Category          @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@id([clubId, categoryId])    
+  @@map("club_categories")
+}
+
+model ClubMembers {
   id       String   @id @default(uuid())      
   userId   String                             
   clubId   String                             
@@ -93,6 +156,18 @@ model ClubMember {
   @@map("club_members")
 }
 
+model ClubAdmin{
+  id       String     @id @default(uuid())
+  userId   String
+  clubId  String
+  addedAt  DateTime   @default(now())
+
+  user     User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  club    Club      @relation(fields: [clubId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, clubId])
+  @@map("club_admins")
+}
 
 model Post {
   id          String   @id @default(uuid())    
