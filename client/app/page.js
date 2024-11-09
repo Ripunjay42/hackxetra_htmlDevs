@@ -6,6 +6,7 @@ import { auth } from '@/components/firebase/firebaseconfig';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
 import Header from '@/components/Header';
 import StreamChatComponent from '@/components/ChatComponent';
+import PostFeed from '@/components/Postfeed';
 
 const HomePage = () => {
   const router = useRouter();
@@ -73,6 +74,7 @@ const HomePage = () => {
       {isAuthenticated ? (
         <>
           <Header handleLogout={handleLogout} handleMessageClick={handleMessageClick} userId={userId} />
+          <PostFeed userId={userId} />
           {isChatOpen && (
             <div className="chat-overlay">
               <div className="chat-popup">

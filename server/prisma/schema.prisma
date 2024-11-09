@@ -198,6 +198,7 @@ model Post {
   title       String
   description String
   content     String
+  imageUrl    String? 
   createdAt   DateTime  @default(now())
   userId      String
   groupId     String? // Optional foreign key for Group
