@@ -27,6 +27,7 @@ const HomePage = () => {
             const response = await axios.get(`http://localhost:3001/api/auth/user/${user.email}`);
             setIsRegistered(response.data.exists);
             setUserID(response.data.userId);
+            localStorage.setItem('userId', response.data.userId);
             const usersResponse = await axios.get("http://localhost:3001/api/auth/users");
             setAllUserIds(usersResponse.data);
             console.log("alluserIds", usersResponse.data);
