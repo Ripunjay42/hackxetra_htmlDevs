@@ -38,6 +38,7 @@ model User{
   clubAdmin               ClubAdmin[] 
   Like        Like[]
   Comment     Comment[]  
+  events                  Event[] 
   createdAt               DateTime @default(now())
   updatedAt               DateTime @updatedAt
 }
@@ -208,5 +209,37 @@ model Post {
   Comment     Comment[]
 
   @@map("posts")
+}
+
+model Event {
+  id            String     @id @default(uuid())
+  eventName     String
+  description   String?
+  date          DateTime
+  location      String
+  fromTime      DateTime
+  toTime        DateTime
+  eventImageURL String?
+  userId        String
+
+  user          User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  rsvps         RSVP[]
+
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+
+  @@map("events")
+}
+
+model RSVP {
+  id        String    @id @default(uuid())
+  eventId   String
+  userIds   String[]  // Array of user IDs who RSVP'd to this event
+
+  event     Event     @relation(fields: [eventId], references: [id], onDelete: Cascade)
+ 
+  createdAt DateTime  @default(now())
+  
+  @@map("rsvps")
 }
 
