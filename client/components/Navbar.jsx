@@ -32,7 +32,7 @@ const Navbar = ({ handleLogout, handleMessageClick }) => {
       />
       <BsCalendar4Event
         className="w-6 h-6 lg:w-8 lg:h-8 cursor-pointer"
-        onClick={() => router.push("/")}
+        onClick={() => router.push("/event")}
       />
       <RxDashboard
         className="w-6 h-6 lg:w-8 lg:h-8 cursor-pointer"

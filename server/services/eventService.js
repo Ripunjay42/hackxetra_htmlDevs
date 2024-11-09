@@ -22,7 +22,7 @@ exports.createEventService = (req, res) => {
         }
 
         const oldPath = poster.filepath;
-        const newPath = path.join(__dirname, '../public', poster.originalFilename);
+        const newPath = path.join(__dirname, '../public/uploads', poster.originalFilename);
 
         // Copy file to the new location
         fs.copyFile(oldPath, newPath, async (error) => {
