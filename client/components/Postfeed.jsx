@@ -6,10 +6,9 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Heart, MessageCircle, Trash2, X } from 'lucide-react';
+import { Heart, MessageCircle, Trash2, X, Plus } from 'lucide-react';
 
-const PostFeed = ({ userId }) => {
-  const [posts, setPosts] = useState([]);
+const CreatePostForm = ({ onSubmit, onClose }) => {
   const [newPost, setNewPost] = useState({ 
     title: '', 
     description: '', 
@@ -17,31 +16,7 @@ const PostFeed = ({ userId }) => {
     image: null 
   });
   const [imagePreview, setImagePreview] = useState(null);
-  const [comments, setComments] = useState({});
-  const [newComments, setNewComments] = useState({});
-  const [error, setError] = useState('');
-  const [isDeleting, setIsDeleting] = useState({});
-  const [loading, setLoading] = useState(true);
 
-  // Fetch posts
-  const fetchPosts = async () => {
-    try {
-      setLoading(true);
-      const response = await axios.get('http://localhost:3001/api/posts');
-      setPosts(response.data);
-    } catch (error) {
-      console.error('Error fetching posts:', error);
-      setError('Failed to fetch posts');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchPosts();
-  }, []);
-
-  // Handle image selection
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -54,143 +29,27 @@ const PostFeed = ({ userId }) => {
     }
   };
 
-  // Remove selected image
   const handleRemoveImage = () => {
     setNewPost({ ...newPost, image: null });
     setImagePreview(null);
   };
 
-  // Create post
-  const handleCreatePost = async (e) => {
-    e.preventDefault();
-    try {
-      if (!newPost.title || !newPost.description || !newPost.content) {
-        setError('Please fill in all required fields');
-        return;
-      }
-
-      const formData = new FormData();
-      formData.append('title', newPost.title);
-      formData.append('description', newPost.description);
-      formData.append('content', newPost.content);
-      formData.append('userId', userId);
-      
-      if (newPost.image) {
-        formData.append('image', newPost.image);
-      }
-
-      await axios.post('http://localhost:3001/api/posts', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      });
-      
-      setNewPost({ title: '', description: '', content: '', image: null });
-      setImagePreview(null);
-      setError('');
-      fetchPosts();
-    } catch (error) {
-      console.error('Error creating post:', error);
-      setError(error.response?.data?.error || 'Failed to create post');
-    }
-  };
-
-  // Delete post
-  const handleDeletePost = async (postId) => {
-    if (isDeleting[postId]) return;
-    
-    try {
-      setIsDeleting(prev => ({ ...prev, [postId]: true }));
-      setError('');
-
-      // Ensure userId is a number
-      const numericUserId = parseInt(userId);
-      
-      // Make sure we have valid IDs
-      if (!postId || !numericUserId) {
-        throw new Error('Invalid post or user ID');
-      }
-
-      const response = await axios.delete(
-        `http://localhost:3001/api/posts/${postId}`,
-        {
-          data: { userId: numericUserId }
-        }
-      );
-
-      if (response.status === 200) {
-        setPosts(currentPosts => 
-          currentPosts.filter(post => post.id !== postId)
-        );
-      }
-    } catch (error) {
-      console.error('Delete error:', error);
-      const errorMessage = error.response?.data?.error || 
-                          error.message || 
-                          'Failed to delete post';
-      setError(errorMessage);
-    } finally {
-      setIsDeleting(prev => ({ ...prev, [postId]: false }));
-    }
-  };
-
-  // Handle like
-  const handleLike = async (postId) => {
-    try {
-      await axios.post(`http://localhost:3001/api/posts/${postId}/like`, { userId });
-      fetchPosts();
-    } catch (error) {
-      setError('Failed to like post');
-    }
-  };
-
-  // Handle comment
-  const handleComment = async (postId) => {
-    try {
-      if (!newComments[postId]?.trim()) {
-        setError('Comment cannot be empty');
-        return;
-      }
-
-      await axios.post(`http://localhost:3001/api/posts/${postId}/comment`, {
-        userId,
-        comment: newComments[postId]
-      });
-      setNewComments({ ...newComments, [postId]: '' });
-      fetchPosts();
-    } catch (error) {
-      setError('Failed to add comment');
-    }
-  };
-
-  // Toggle comments visibility
-  const toggleComments = (postId) => {
-    setComments(prev => ({ ...prev, [postId]: !prev[postId] }));
-  };
-
   return (
-    <div className="max-w-3xl mx-auto p-4">
-      {error && (
-        <Alert variant="destructive" className="mb-4">
-          <AlertDescription className="flex justify-between items-center">
-            <span>{error}</span>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setError('')}
-              className="h-8 px-2 hover:bg-red-100"
-            >
-              <X className="h-4 w-4" />
-            </Button>
-          </AlertDescription>
-        </Alert>
-      )}
-      
-      {/* Create Post Form */}
-      <Card className="mb-8">
-        <CardHeader>
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+      <Card className="w-full max-w-2xl">
+        <CardHeader className="flex flex-row justify-between items-center">
           <h2 className="text-2xl font-bold">Create New Post</h2>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onClose}
+            className="hover:bg-gray-100"
+          >
+            <X className="h-5 w-5" />
+          </Button>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleCreatePost} className="space-y-4">
+          <form onSubmit={onSubmit} className="space-y-4">
             <Input
               placeholder="Title"
               value={newPost.title}
@@ -238,12 +97,166 @@ const PostFeed = ({ userId }) => {
                 </div>
               )}
             </div>
-            <Button type="submit">Create Post</Button>
+            <div className="flex justify-end space-x-2">
+              <Button type="button" variant="outline" onClick={onClose}>
+                Cancel
+              </Button>
+              <Button type="submit">Create Post</Button>
+            </div>
           </form>
         </CardContent>
       </Card>
+    </div>
+  );
+};
 
-      {/* Posts Feed */}
+const PostFeed = ({ userId }) => {
+  const [posts, setPosts] = useState([]);
+  const [showCreatePost, setShowCreatePost] = useState(false);
+  const [comments, setComments] = useState({});
+  const [newComments, setNewComments] = useState({});
+  const [error, setError] = useState('');
+  const [isDeleting, setIsDeleting] = useState({});
+  const [loading, setLoading] = useState(true);
+
+  const fetchPosts = async () => {
+    try {
+      setLoading(true);
+      const response = await axios.get('http://localhost:3001/api/posts');
+      setPosts(response.data);
+    } catch (error) {
+      console.error('Error fetching posts:', error);
+      setError('Failed to fetch posts');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchPosts();
+  }, []);
+
+  const handleCreatePost = async (e) => {
+    e.preventDefault();
+    try {
+      const formData = new FormData(e.target);
+      formData.append('userId', userId);
+      
+      await axios.post('http://localhost:3001/api/posts', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      
+      setShowCreatePost(false);
+      setError('');
+      fetchPosts();
+    } catch (error) {
+      console.error('Error creating post:', error);
+      setError(error.response?.data?.error || 'Failed to create post');
+    }
+  };
+
+  const handleDeletePost = async (postId) => {
+    if (isDeleting[postId]) return;
+    
+    try {
+      setIsDeleting(prev => ({ ...prev, [postId]: true }));
+      setError('');
+      
+      const numericUserId = parseInt(userId);
+      
+      if (!postId || !numericUserId) {
+        throw new Error('Invalid post or user ID');
+      }
+
+      const response = await axios.delete(
+        `http://localhost:3001/api/posts/${postId}`,
+        {
+          data: { userId: numericUserId }
+        }
+      );
+
+      if (response.status === 200) {
+        setPosts(currentPosts => 
+          currentPosts.filter(post => post.id !== postId)
+        );
+      }
+    } catch (error) {
+      console.error('Delete error:', error);
+      const errorMessage = error.response?.data?.error || 
+                          error.message || 
+                          'Failed to delete post';
+      setError(errorMessage);
+    } finally {
+      setIsDeleting(prev => ({ ...prev, [postId]: false }));
+    }
+  };
+
+  const handleLike = async (postId) => {
+    try {
+      await axios.post(`http://localhost:3001/api/posts/${postId}/like`, { userId });
+      fetchPosts();
+    } catch (error) {
+      setError('Failed to like post');
+    }
+  };
+
+  const handleComment = async (postId) => {
+    try {
+      if (!newComments[postId]?.trim()) {
+        setError('Comment cannot be empty');
+        return;
+      }
+
+      await axios.post(`http://localhost:3001/api/posts/${postId}/comment`, {
+        userId,
+        comment: newComments[postId]
+      });
+      setNewComments({ ...newComments, [postId]: '' });
+      fetchPosts();
+    } catch (error) {
+      setError('Failed to add comment');
+    }
+  };
+
+  const toggleComments = (postId) => {
+    setComments(prev => ({ ...prev, [postId]: !prev[postId] }));
+  };
+
+  return (
+    <div className="max-w-3xl mx-auto p-4">
+      {error && (
+        <Alert variant="destructive" className="mb-4">
+          <AlertDescription className="flex justify-between items-center">
+            <span>{error}</span>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setError('')}
+              className="h-8 px-2 hover:bg-red-100"
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </AlertDescription>
+        </Alert>
+      )}
+
+      <div className="mb-6">
+        <Button
+          onClick={() => setShowCreatePost(true)}
+          className="w-full flex items-center justify-center space-x-2"
+        >
+          <Plus className="h-5 w-5" />
+          <span>Create New Post</span>
+        </Button>
+      </div>
+
+      {showCreatePost && (
+        <CreatePostForm
+          onSubmit={handleCreatePost}
+          onClose={() => setShowCreatePost(false)}
+        />
+      )}
+
       <div className="space-y-4">
         {loading ? (
           <div className="text-center p-4">Loading posts...</div>
