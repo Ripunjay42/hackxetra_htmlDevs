@@ -12,7 +12,7 @@ const eventRoutes = require("./routes/eventRoutes");
 app.use(cors({
     origin: 'http://localhost:3000',  // Allow requests from your frontend
     methods: 'GET, POST, PUT, DELETE',  // Allow certain HTTP methods
-    allowedHeaders: 'Content-Type, Authorization',  // Allow certain headers
+    allowedHeaders: ['Content-Type', 'Authorization', 'userid'], // Allow certain headers
   }));
 
 app.use(express.json());

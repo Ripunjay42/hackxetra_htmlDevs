@@ -1,14 +1,11 @@
-// Import functions from eventService
-import selectAllService from '../services/eventService';
-import { createEvent as createEventService } from '../services/eventService';
+const { selectAll, createEventService } = require("../services/eventService"); // Use require instead of import
 
-const selectAllEvent = async (req, res) => {
-    return await selectAllService(req, res); // Calls the function from eventService
-}
+// Handler to select all events
+exports.selectAllEvent = async (req, res) => {
+    return await selectAll(req, res); // Calls the function from eventService
+};
 
-const createEventHandler = async (req, res) => {
+// Handler to create a new event
+exports.createEvent = async (req, res) => {
     return await createEventService(req, res); // Calls the function from eventService
-}
-
-// Export the locally defined functions
-export { selectAllEvent, createEventHandler as createEvent };
+};

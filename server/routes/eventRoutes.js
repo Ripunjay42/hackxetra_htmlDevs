@@ -1,11 +1,11 @@
 const express = require('express');
-const { selectAll, createEvent } = require('../services/eventService'); // Use require
+const { selectAllEvent, createEvent } = require('../controllers/eventController'); // Use require
 const router = express.Router();
 
 // Endpoint to create a new event
 router.post('/', createEvent);
 
 // Endpoint to retrieve all events
-router.get('/', selectAll);
+router.get('/', selectAllEvent);
 
 module.exports = router;
