@@ -6,6 +6,7 @@ const authRoutes = require('./routes/authRoutes');
 const streamRoutes = require('./routes/streamRoutes');
 const clubRoutes  = require("./routes/clubRoutes")
 const gropuRoutes = require("./routes/groupRoutes")
+const eventRoutes = require("./routes/eventRoutes");
 
 // Enable CORS for your frontend domain (e.g., localhost:3000)
 app.use(cors({
@@ -19,5 +20,6 @@ app.use('/api/auth', authRoutes);
 app.use('/api/stream', streamRoutes);
 app.use('/api/clubs',clubRoutes);
 app.use('/api/groups',gropuRoutes);
+app.use('/api/event',eventRoutes)
 
 module.exports = app;
