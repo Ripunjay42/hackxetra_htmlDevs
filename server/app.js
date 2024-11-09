@@ -9,7 +9,7 @@ const clubRoutes  = require("./routes/clubRoutes");
 const gropuRoutes = require("./routes/groupRoutes");
 const postRoutes = require("./routes/postRoutes.js");
 const eventRoutes = require("./routes/eventRoutes");
-
+const rsvpRoutes = require("./routes/rsbvRoutes.js");
 // Enable CORS for your frontend domain (e.g., localhost:3000)
 app.use(cors({
     origin: 'http://localhost:3000',  // Allow requests from your frontend
@@ -27,5 +27,6 @@ app.use('/api/clubs',clubRoutes);
 app.use('/api/groups',gropuRoutes);
 app.use('/api/posts', postRoutes);
 app.use('/api/event',eventRoutes);
+app.use('/api/rsbp',rsvpRoutes);
 
 module.exports = app;

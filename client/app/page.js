@@ -50,6 +50,7 @@ const HomePage = () => {
   const handleLogout = async () => {
     try {
       await signOut(auth);
+      localStorage.removeItem('userID');
       setIsAuthenticated(false);
       setIsRegistered(false);
       router.push('/auth');

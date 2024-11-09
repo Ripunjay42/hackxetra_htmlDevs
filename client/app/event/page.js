@@ -1,41 +1,57 @@
-'use client';
-import React, { useState } from 'react';
-import axios from 'axios';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
+"use client";
+import React, { useState } from "react";
+import axios from "axios";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+  CardFooter,
+} from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Calendar, Clock, MapPin, Upload, Type, List, PlusCircle } from 'lucide-react';
+import {
+  Calendar,
+  Clock,
+  MapPin,
+  Upload,
+  Type,
+  List,
+  PlusCircle,
+} from "lucide-react";
 
 const CreateEventForm = () => {
   const [showEvents, setShowEvents] = useState(false);
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
-    eventname: '',
-    location: '',
-    eventdate: '',
-    startingtime: '',
-    endingtime: '',
-    description: '',
+    eventname: "",
+    location: "",
+    eventdate: "",
+    startingtime: "",
+    endingtime: "",
+    description: "",
     poster: null,
   });
   const [previewUrl, setPreviewUrl] = useState(null);
   const [isSuccess, setIsSuccess] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
+  const [isRsbped, setRbped] = useState(true);
 
   const fetchEvents = async () => {
     setLoading(true);
     try {
-      const userId = localStorage.getItem('userId');
+      const userId = localStorage.getItem("userID");
       if (!userId) {
-        throw new Error('User not authenticated');
+        throw new Error("User not authenticated");
       }
 
-      const response = await axios.get('http://localhost:3001/api/event/', {
-        headers: { userid: userId }
+      const response = await axios.get("http://localhost:3001/api/event/", {
+        headers: { userid: userId },
       });
       setEvents(response.data.events);
     } catch (err) {
@@ -54,20 +70,20 @@ const CreateEventForm = () => {
 
   const handleChange = (e) => {
     const { name, value, type, files } = e.target;
-    if (type === 'file') {
+    if (type === "file") {
       const file = files[0];
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
         [name]: file,
       }));
-      
+
       // Create preview URL for the selected image
       if (file) {
         const url = URL.createObjectURL(file);
         setPreviewUrl(url);
       }
     } else {
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
         [name]: value,
       }));
@@ -85,35 +101,35 @@ const CreateEventForm = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
+    setError("");
     setIsSuccess(false);
 
-    const userId = localStorage.getItem('userId');
+    const userId = localStorage.getItem("userID");
     if (!userId) {
-      setError('User not authenticated');
+      setError("User not authenticated");
       return;
     }
 
     const formDataToSend = new FormData();
-    Object.keys(formData).forEach(key => {
+    Object.keys(formData).forEach((key) => {
       formDataToSend.append(key, formData[key]);
     });
 
     try {
       await axios.post("http://localhost:3001/api/event/", formDataToSend, {
         headers: {
-          'Content-Type': 'multipart/form-data',
-          'userid': userId,
+          "Content-Type": "multipart/form-data",
+          userid: userId,
         },
       });
       setIsSuccess(true);
       setFormData({
-        eventname: '',
-        location: '',
-        eventdate: '',
-        startingtime: '',
-        endingtime: '',
-        description: '',
+        eventname: "",
+        location: "",
+        eventdate: "",
+        startingtime: "",
+        endingtime: "",
+        description: "",
         poster: null,
       });
       setPreviewUrl(null);
@@ -125,12 +141,42 @@ const CreateEventForm = () => {
     }
   };
 
+  const handleRsvp = async (eventId) => {
+    const userId = localStorage.getItem('userID');
+    if (!userId) {
+        setError('User not authenticated');
+        return;
+    }
+
+    try {
+        const response = await axios.post("http://localhost:3001/api/rsbp",
+            { eventId: eventId },  // Request body
+            {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'userid': userId,
+                },
+            }
+        );
+
+        console.log(response.data);
+        if (response.data.message === "RSVP created successfully") {
+            setRbped(false);
+        }
+        // You might want to show a success message to the user
+        setIsSuccess(true);
+    } catch (error) {
+        console.error('Error submitting RSVP:', error);
+        setError(error.message);
+    }
+};
+
   return (
     <div className="min-h-screen bg-gray-50 py-12">
       <div className="max-w-6xl mx-auto px-4">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-3xl font-bold">Event Management</h1>
-          <Button 
+          <Button
             onClick={handleToggleView}
             className="flex items-center gap-2"
             variant="outline"
@@ -152,12 +198,19 @@ const CreateEventForm = () => {
         {showEvents ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {loading ? (
-              <div className="col-span-full text-center py-12">Loading events...</div>
+              <div className="col-span-full text-center py-12">
+                Loading events...
+              </div>
             ) : events.length > 0 ? (
               events.map((event) => (
-                <Card key={event.id} className="hover:shadow-lg transition-shadow duration-300">
+                <Card
+                  key={event.id}
+                  className="hover:shadow-lg transition-shadow duration-300"
+                >
                   <CardHeader>
-                    <CardTitle className="text-xl font-bold">{event.eventName}</CardTitle>
+                    <CardTitle className="text-xl font-bold">
+                      {event.eventName}
+                    </CardTitle>
                     <CardDescription className="flex items-center gap-2">
                       <Calendar className="w-4 h-4" />
                       {new Date(event.date).toLocaleDateString()}
@@ -166,11 +219,11 @@ const CreateEventForm = () => {
                   <CardContent>
                     <div className="space-y-4">
                       {event.eventImageURL ? (
-                    <img src={"http://localhost:3001"+event.eventImageURL}
-                            alt={"http://localhost:3001"+event.eventImageURL}
-                            className="w-full h-48 object-cover rounded-md"
+                        <img
+                          src={"http://localhost:3001" + event.eventImageURL}
+                          alt={"http://localhost:3001" + event.eventImageURL}
+                          className="w-full h-48 object-cover rounded-md"
                         />
-
                       ) : (
                         <div className="w-full h-48 bg-gray-200 rounded-md flex items-center justify-center">
                           No image available
@@ -183,24 +236,38 @@ const CreateEventForm = () => {
                       </div>
                       <div className="flex items-center gap-2 text-gray-500">
                         <Clock className="w-4 h-4" />
-                        {event.fromTime?.slice(0, 5)} - {event.toTime?.slice(0, 5)}
+                        {event.fromTime?.slice(0, 5)} -{" "}
+                        {event.toTime?.slice(0, 5)}
                       </div>
                     </div>
                   </CardContent>
                   <CardFooter className="text-sm text-gray-500">
                     Created: {new Date(event.createdAt).toLocaleDateString()}
                   </CardFooter>
+                  {isRsbped && (
+                    <Button onClick={() => handleRsvp(event.id)}>RSVP</Button>
+                  )}
+                   {!isRsbped && (
+                    <Button className="opacity-50 cursor-not-allowed" disabled>
+                    RSVPED
+                  </Button>
+                  
+                  )}
                 </Card>
               ))
             ) : (
-              <div className="col-span-full text-center py-12">No events found</div>
+              <div className="col-span-full text-center py-12">
+                No events found
+              </div>
             )}
           </div>
         ) : (
           <Card>
             <CardHeader>
               <CardTitle className="text-2xl">Create New Event</CardTitle>
-              <CardDescription>Fill in the details to create your event</CardDescription>
+              <CardDescription>
+                Fill in the details to create your event
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-6">
