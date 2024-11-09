@@ -22,7 +22,7 @@ const CreateEventForm = () => {
     description: '',
     poster: null,
   });
-
+  const [previewUrl, setPreviewUrl] = useState(null);
   const [isSuccess, setIsSuccess] = useState(false);
   const [error, setError] = useState('');
 
@@ -54,11 +54,34 @@ const CreateEventForm = () => {
 
   const handleChange = (e) => {
     const { name, value, type, files } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: type === 'file' ? files[0] : value,
-    }));
+    if (type === 'file') {
+      const file = files[0];
+      setFormData(prev => ({
+        ...prev,
+        [name]: file,
+      }));
+      
+      // Create preview URL for the selected image
+      if (file) {
+        const url = URL.createObjectURL(file);
+        setPreviewUrl(url);
+      }
+    } else {
+      setFormData(prev => ({
+        ...prev,
+        [name]: value,
+      }));
+    }
   };
+
+  // Clean up preview URL when component unmounts
+  React.useEffect(() => {
+    return () => {
+      if (previewUrl) {
+        URL.revokeObjectURL(previewUrl);
+      }
+    };
+  }, [previewUrl]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -93,7 +116,7 @@ const CreateEventForm = () => {
         description: '',
         poster: null,
       });
-      // Refresh events list if it's being displayed
+      setPreviewUrl(null);
       if (showEvents) {
         fetchEvents();
       }
@@ -142,11 +165,17 @@ const CreateEventForm = () => {
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-4">
-                      <img 
-                        src="/api/placeholder/400/200"
-                        alt={event.eventName}
-                        className="w-full h-48 object-cover rounded-md"
-                      />
+                      {event.eventImageURL ? (
+                    <img src={"http://localhost:3001"+event.eventImageURL}
+                            alt={"http://localhost:3001"+event.eventImageURL}
+                            className="w-full h-48 object-cover rounded-md"
+                        />
+
+                      ) : (
+                        <div className="w-full h-48 bg-gray-200 rounded-md flex items-center justify-center">
+                          No image available
+                        </div>
+                      )}
                       <p className="text-gray-600">{event.description}</p>
                       <div className="flex items-center gap-2 text-gray-500">
                         <MapPin className="w-4 h-4" />
@@ -275,6 +304,15 @@ const CreateEventForm = () => {
                     accept="image/*"
                     required
                   />
+                  {previewUrl && (
+                    <div className="mt-2">
+                      <img
+                        src={previewUrl}
+                        alt="Preview"
+                        className="w-full max-h-48 object-cover rounded-md"
+                      />
+                    </div>
+                  )}
                 </div>
 
                 {isSuccess && (

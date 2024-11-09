@@ -55,7 +55,7 @@ exports.createEventService = (req, res) => {
                 location: fields.location,
                 fromTime: fromTime,
                 toTime: toTime,
-                eventImageURL: newPath,
+                eventImageURL: `/uploads/${poster.originalFilename}`,
                 userId: userId,
                 createdAt: currentTime,
                 updatedAt: currentTime,
