@@ -14,10 +14,21 @@ const AuthFlow = () => {
   const [error, setError] = useState(null);
   const [userID, setUserID] = useState('');
 
+  const isValidTezoEmail = (email) => {
+    return email.toLowerCase().endsWith('@tezu.ac.in');
+  };
+
   const handleEmailLogin = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
+
+    if (!isValidTezoEmail(authData.email)) {
+      setError('Please use your university email address');
+      setLoading(false);
+      return;
+    }
+
     try {
       const userCredential = await signInWithEmailAndPassword(auth, authData.email, authData.password);
       const user = userCredential.user;
@@ -33,6 +44,13 @@ const AuthFlow = () => {
     e.preventDefault();
     setLoading(true);
     setError(null);
+
+    if (!isValidTezoEmail(authData.email)) {
+      setError('Please use your @tezu.ac.in email address');
+      setLoading(false);
+      return;
+    }
+
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, authData.email, authData.password);
       const user = userCredential.user;
@@ -50,6 +68,14 @@ const AuthFlow = () => {
     try {
       const result = await signInWithPopup(auth, googleProvider);
       const user = result.user;
+      
+      if (!isValidTezoEmail(user.email)) {
+        setError('Please use your @tezu.ac.in Google account');
+        await auth.signOut(); // Sign out the user if they used a non-tezu.ac.in email
+        setLoading(false);
+        return;
+      }
+
       await handlePostLogin(user);
     } catch (error) {
       setError('Google sign-in failed.');
@@ -61,16 +87,13 @@ const AuthFlow = () => {
   const handlePostLogin = async (user) => {
     const response = await axios.get(`http://localhost:3001/api/auth/user/${user.email}`);
     if (response.data.exists) {
-        localStorage.setItem('userID', response.data.userId);
-      router.push('/'); // Navigate to the home page if the user exists
+      localStorage.setItem('userID', response.data.userId);
+      router.push('/');
     } else {
-      // Construct the URL with query parameters
       const queryParams = new URLSearchParams({
         email: user.email,
         displayName: user.displayName || '',
       }).toString();
-
-      // Push the user to the profile page with query parameters
       router.push(`/profile?${queryParams}`);
     }
   };
@@ -81,6 +104,10 @@ const AuthFlow = () => {
         <h2 className="text-2xl font-bold mb-6 text-center">
           {isLoginMode ? 'Log In' : 'Sign Up'}
         </h2>
+
+        <p className="text-sm text-gray-600 mb-4 text-center">
+          Please use your @tezu.ac.in email address
+        </p>
 
         {error && <p className="text-red-500 text-center mb-4">{error}</p>}
 
@@ -93,7 +120,7 @@ const AuthFlow = () => {
                 id="email"
                 value={authData.email}
                 onChange={(e) => setAuthData({ ...authData, email: e.target.value })}
-                placeholder="Enter your email"
+                placeholder="yourname@tezu.ac.in"
                 className="w-full px-4 py-2 mt-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 required
               />
