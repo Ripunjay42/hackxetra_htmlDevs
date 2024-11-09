@@ -15,6 +15,8 @@ app.use(cors({
     allowedHeaders: 'Content-Type, Authorization',  // Allow certain headers
   }));
 
+  app.use('/uploads', express.static('public/uploads'));
+
 app.use(express.json());
 app.use('/api/auth', authRoutes);
 app.use('/api/stream', streamRoutes);

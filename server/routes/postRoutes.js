@@ -1,12 +1,13 @@
 const express = require('express');
 const router = express.Router();
 const postController = require('../controllers/postController');
+const upload = require('../config/multer');
 
 // Get all posts
 router.get('/', postController.getAllPosts);
 
 // Create new post
-router.post('/', postController.createPost);
+router.post('/', upload.single('image'), postController.createPost);
 
 // Toggle like on a post
 router.post('/:postId/like', postController.toggleLike);
