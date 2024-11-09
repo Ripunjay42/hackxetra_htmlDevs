@@ -35,7 +35,9 @@ model User{
   clubMemberships         ClubMembers[]
   posts                   Post[] 
   groupAdmin              GroupAdmin[]
-  clubAdmin               ClubAdmin[]   
+  clubAdmin               ClubAdmin[] 
+  Like        Like[]
+  Comment     Comment[]  
   createdAt               DateTime @default(now())
   updatedAt               DateTime @updatedAt
 }
@@ -44,7 +46,6 @@ enum Gender {
   FEMALE
   OTHER
 }
-
 
 model Group{
   id             String  @id @default(uuid())
@@ -169,17 +170,43 @@ model ClubAdmin{
   @@map("club_admins")
 }
 
+model Like {
+  id     String @id @default(uuid())
+  postId String
+  userId String
+  post   Post   @relation(fields: [postId], references: [id])
+  user   User   @relation(fields: [userId], references: [id])
+
+  @@map("likes")
+}
+
+model Comment {
+  id      String @id @default(uuid())
+  postId  String
+  userId  String
+  comment String
+
+  post Post @relation(fields: [postId], references: [id])
+  user User @relation(fields: [userId], references: [id])
+
+  @@map("comments")
+}
+
 model Post {
-  id          String   @id @default(uuid())    
-  content     String                           
-  createdAt   DateTime @default(now())         
-  userId      String                           
-  groupId     String?                          
-  clubId      String?                          
-  
-  user        User     @relation(fields: [userId], references: [id])
-  group       Group?   @relation(fields: [groupId], references: [id])
-  club        Club?    @relation(fields: [clubId], references: [id])
-  
+  id          String    @id @default(uuid())
+  title       String
+  description String
+  content     String
+  createdAt   DateTime  @default(now())
+  userId      String
+  groupId     String? // Optional foreign key for Group
+  clubId      String? // Optional foreign key for Club
+  user        User      @relation(fields: [userId], references: [id])
+  group       Group?    @relation(fields: [groupId], references: [id])
+  club        Club?     @relation(fields: [clubId], references: [id])
+   Like        Like[]
+  Comment     Comment[]
+
   @@map("posts")
 }
+
