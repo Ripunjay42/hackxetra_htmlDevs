@@ -11,7 +11,6 @@ generator client {
 datasource db {
   provider  = "postgresql"
   url       = env("DATABASE_URL")
-  directUrl = env("DIRECT_URL")
 }
 
 
@@ -19,10 +18,11 @@ model User{
   id                      String  @id @default(uuid())
   username                String  @unique
   email                   String  @unique
-  firstName   String
-  lastName    String
-  phoneNumber String
-  gender      Gender
+  firstName               String
+  lastName                String
+  phoneNumber             String
+  password                String
+  gender                  Gender
   profilePicURL           String?
   bio                     String
   emailVerified           Boolean @default(false)
@@ -39,6 +39,8 @@ model User{
   createdAt               DateTime @default(now())
   updatedAt               DateTime @updatedAt
 }
+
+
 enum Gender {
   MALE
   FEMALE
@@ -183,3 +185,7 @@ model Post {
   
   @@map("posts")
 }
+
+
+
+

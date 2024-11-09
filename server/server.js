@@ -7,6 +7,7 @@ const PORT = process.env.PORT || 3001;
 async function startServer() {
   try {
     // Test the database connection
+    
     await prisma.$connect();
     console.log('✅ Successfully connected to the database');
 
