@@ -1,4 +1,5 @@
 const prisma = require("../db/index");
+const db = require('../db/connection');
 
 // Register a new user
 exports.registerUser = async (req, res) => {
@@ -59,4 +60,19 @@ exports.getAllUserIds = async (req, res) => {
   } catch (error) {
     res.status(500).json({ error: 'Failed to fetch user IDs' });
   }
+};
+
+
+exports.getAllUserInfo = async (req, res) => {
+  const { userId } = req.params; // Corrected to req.params
+  console.log(userId); // Log userId for debugging
+
+  db.any('SELECT id, "email", "firstName", "lastName", "phoneNumber", bio, username FROM "User" WHERE id = $1', [userId])
+    .then((data) => {
+      res.json({ users: data });
+    })
+    .catch((error) => {
+      console.error(error); // Log the error for debugging
+      res.status(500).json({ error: 'Failed to fetch user information' });
+    });
 };
