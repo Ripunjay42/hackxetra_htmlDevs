@@ -107,7 +107,7 @@ exports.selectAll = (req, res) => {
     }
 
     // Query the database to select all events for the given userId
-    db.any('SELECT * FROM events WHERE "userId" = $1', [userId])
+    db.any('SELECT * FROM events')
         .then((data) => {
             // If events are found, send them as the response
             res.status(200).json({
